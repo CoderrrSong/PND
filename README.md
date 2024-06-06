@@ -7,7 +7,7 @@ The **PND** is a multi-corpus dataset to enhance the research of automatic paten
 The `samples` folder contains examples in both Chinese and English. It includes 4,627 positive examples, negative examples, and unrelated examples in Chinese, and 7,488 positive examples, negative examples, and unrelated examples each in English.
 
 ## Dataset Description
-The `documents.xx.zip` compressed package contains a collection of Chinese and English documents. It comprises 18,597 Chinese documents and 29,863 English documents. Each document sample is formatted as follows:
+The `documents.xx.zip` compressed package contains a collection of Chinese and English documents. These documents contain field information for all patents related to the data in the samples folder. It comprises 18,597 Chinese documents and 29,863 English documents. Each document sample is formatted as follows:
 ```python
 {
     "pnum": "US3337466A",
