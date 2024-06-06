@@ -1,15 +1,21 @@
-# PNov
-1. The documents.xx.zip compressed package contains positive and negative examples, as well as documents related to unrelated examples, including 18597 Chinese documents and 29863 English documents.
-The format of a specific example is as follows:
+# PND
 
+## Introduction
+The **PND** is a multi-corpus dataset to enhance the research of automatic patent novelty detection. 
+
+## Sample Distribution
+The `samples` folder contains examples in both Chinese and English. It includes 4,627 positive examples, negative examples, and unrelated examples in Chinese, and 7,488 positive examples, negative examples, and unrelated examples each in English.
+
+## Dataset Description
+The `documents.xx.zip` compressed package contains a collection of Chinese and English documents. It comprises 18,597 Chinese documents and 29,863 English documents. Each document sample is formatted as follows:
+```python
 {
     "pnum": "US3337466A",
     "title": "Effervescent dental cleaner compositions",
     "abstract": "United States Patent Oil-ice 3,337,466 Patented Aug.",
     "description": "United States Patent Oil-ice 3,337,466 Patented Aug. 22, 1967 This invention relates in general to compositions of matter and processes for using the same to produce aerobic conditions"
 }
-
-2. The sample folder contains examples in both Chinese and English, with 4627 positive examples, negative examples, and unrelated examples in Chinese; English includes 7488 positive examples, negative examples, and unrelated examples each;
-
-
-3. run_tuple.py is the code file for binary classification experiments; Run_triple.py is the code file for the three classification experiment;
+```
+## Code Files
+**run_tuple.py**: This Python code file is dedicated to binary classification experiments.
+**run_triple.py**: This Python code file is dedicated to three classification experiments.
