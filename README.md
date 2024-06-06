@@ -1,6 +1,7 @@
 # PNov
 1. The documents.xx.zip compressed package contains positive and negative examples, as well as documents related to unrelated examples, including 18597 Chinese documents and 29863 English documents.
 The format of a specific example is as follows:
+
 {
     "pnum": "US3337466A",
     "title": "Effervescent dental cleaner compositions",
