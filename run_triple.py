@@ -7,7 +7,7 @@ from torch.utils.data import Dataset, DataLoader
 import tqdm
 
 
-# MLP模型
+
 class MLP(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super(MLP, self).__init__()
@@ -24,7 +24,7 @@ class MLP(nn.Module):
         return out
 
 
-# 数据集类
+
 class PatentDataset(Dataset):
     def __init__(self, data_file, pt_folder):
         self.data = self._read_data(data_file)
@@ -36,7 +36,7 @@ class PatentDataset(Dataset):
             for line in file:
                 parts = line.strip().split(',')[:-2]
                 doc = line.strip().split(',')[-2]
-                label = int(line.strip().split(',')[-1])  # 将标签转换为整数
+                label = int(line.strip().split(',')[-1])  
                 patent_data.append((parts, doc, label))
         return patent_data
 
@@ -47,7 +47,7 @@ class PatentDataset(Dataset):
         patent_numbers, doc, label = self.data[idx]
         features = []
 
-        # 待检测文档list处理
+
         for patent_number in patent_numbers:
             #print(patent_number)
             pt_file = self.pt_folder + patent_number + '.pt'
@@ -59,7 +59,7 @@ class PatentDataset(Dataset):
             claims_embed = torch.zeros(1, length)
 
 
-            # 在数据处理部分将 numpy 数组转换为 PyTorch 张量
+
             if len(data['title_embed']) != 0:
                 title_embed = data['title_embed'].reshape(1, length)
 
@@ -78,7 +78,7 @@ class PatentDataset(Dataset):
         features = torch.stack(features)
         features = torch.mean(features, dim=0)
 
-        # 检测位置文档处理
+
         pt_file_d = self.pt_folder + doc + '.pt'
         data_d = torch.load(pt_file_d, map_location=torch.device('cpu'))
 
@@ -105,21 +105,21 @@ class PatentDataset(Dataset):
         f_num, dim = feature_all.size()
         feature_all = feature_all.reshape(f_num * dim)
 
-        # 找出 NaN 值的位置
+
         mask = torch.isnan(feature_all)
-        # 使用 mask 将 NaN 值替换为0
+
         feature_all = torch.where(mask, torch.zeros_like(feature_all), feature_all)
 
-        # 找出 inf 值的位置
+
         mask = torch.isinf(feature_all)
-        # 使用 mask 将 inf 值替换为0
+
         feature_all = torch.where(mask, torch.zeros_like(feature_all), feature_all)
 
         return feature_all, label
 
 
-# 训练函数
-# 训练函数
+
+
 def train(model, train_loader, test_loader, criterion, optimizer, num_epochs, log_file,test_log_file):
     with open(log_file, 'w') as f:
         f.write("Epoch,Train_Loss,Valid_Loss,Accuracy,Precision,Recall,F1,AUC\n")
@@ -131,25 +131,25 @@ def train(model, train_loader, test_loader, criterion, optimizer, num_epochs, lo
         for inputs, labels in train_loader:
             optimizer.zero_grad()
             outputs = model(inputs.float())
-            loss = criterion(outputs, labels)  # 多类别交叉熵损失
+            loss = criterion(outputs, labels)  
             loss.backward()
             optimizer.step()
             running_train_loss += loss.item()
 
-        # 每一轮epoch结束后进行测试
+
         valid_loss, accuracy, precision, recall, f1, auc = test(model, valid_loader)
-        # 将结果保存到文件中
+
         with open(log_file, 'a') as f:
             f.write(f"{epoch + 1},{running_train_loss},{valid_loss},{accuracy},{precision},{recall},{f1},{auc}\n")
 
-        # 每一轮epoch结束后进行测试
+
         test_loss, accuracy, precision, recall, f1, auc = test(model, test_loader)
-        # 将结果保存到文件中
+
         with open(test_log_file, 'a') as f:
             f.write(f"{epoch + 1},{test_loss},{accuracy},{precision},{recall},{f1},{auc}\n")
 
 
-# 测试函数
+
 def test(model, test_loader):
     model.eval()
     correct = 0
@@ -164,7 +164,7 @@ def test(model, test_loader):
             loss = criterion(outputs, labels)
             running_test_loss += loss.item()
 
-            # 使用 softmax 将输出转换为概率分布
+
             probabilities = nn.functional.softmax(outputs, dim=1)
             predicted_probabilities.extend(probabilities.cpu().numpy())
 
@@ -180,7 +180,7 @@ def test(model, test_loader):
     recall = recall_score(labels_list, predictions, average='macro')
     f1 = f1_score(labels_list, predictions, average='macro')
 
-    # 使用概率分布计算 ROC AUC
+
     auc = roc_auc_score(labels_list, predicted_probabilities, multi_class='ovr')
 
     return test_loss, accuracy, precision, recall, f1, auc
@@ -193,7 +193,7 @@ if __name__ == '__main__':
     F1_list=[]
     AUC_list=[]
     for cnt in range(1):
-        # 加载数据
+
         type="all"
         foder=f"D:/Draw/GLM/{type}/"
         train_data = PatentDataset(foder+'train_triple.txt', foder+'fields/')
@@ -203,22 +203,22 @@ if __name__ == '__main__':
         test_data = PatentDataset(foder+'test_triple.txt', foder+'fields/')
         print(len(test_data))
 
-        # 创建数据加载器
+
         train_loader = DataLoader(train_data, batch_size=64, shuffle=True)
         valid_loader = DataLoader(valid_data, batch_size=64)
         test_loader = DataLoader(test_data, batch_size=64)
 
-        # 模型参数
+
         input_size = 4096 * 8
         hidden_size = 512
-        output_size = 3  # 三元组分类任务
+        output_size = 3  
 
-        # 初始化模型、损失函数和优化器
+
         model = MLP(input_size, hidden_size, output_size)
-        criterion = nn.CrossEntropyLoss()  # 多类别交叉熵损失
+        criterion = nn.CrossEntropyLoss()  
         optimizer = optim.Adam(model.parameters(), lr=0.0001)
         test_log_file = f'test_log_triple_{type}.txt'
-        # 训练模型并保存结果到文件
+
         train_log_file = f'train_log_triple_{type}.txt'
         train(model, train_loader, test_loader, criterion, optimizer, num_epochs=E, log_file=train_log_file,test_log_file=test_log_file)
 
