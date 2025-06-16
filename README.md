@@ -4,9 +4,9 @@
 The **PND** is a multi-corpus dataset to enhance the research of automatic patent novelty detection. 
 
 ## Sample Distribution
-1.The 'samples' folder contains two subfolders, 'cn' and 'us', along with the compressed file 'samples_all.zip'.  
-2.First, 'samples_all.zip' contains all the samples, including **46,270** positive, negative, and unrelated examples in Chinese, **74,880** such examples in English, and **89,920** in other languages. These correspond to 494,279 Chinese patent documents, 1,772,702 English patent documents, and 386,313 patent documents in other languages.  
-3.The 'cn' and 'us' folders contain  extracted Chinese and English examples (10%) for experimentation. The 'cn' folder includes 4,627 positive, negative, and unrelated examples in Chinese, while the 'us' folder includes 7,488 such examples in English.
+1.First, 'samples_all.zip' contains all the samples, including **46,270** positive, negative, and unrelated examples in Chinese, **74,880** such examples in English, and **89,920** in other languages. These correspond to 494,279 Chinese patent documents, 1,772,702 English patent documents, and 386,313 patent documents in other languages.  
+2.The 'samples_cn_experiment' and 'samples_us_experiment' folders contain extracted Chinese and English examples (10%) for experimentation. The 'samples_cn_experiment' folder includes 4,627 positive, negative, and unrelated examples in Chinese, while the 'samples_us_experiment' folder includes 7,488 such examples in English.
+3.2.The 'documents_cn_experiment' and 'documents_us_experiment' folders contains patent documents related to the experimental samples in both Chinese and English.
 
 ## Dataset Description
 The compressed file 'documents. xx. zip' contains both Chinese and English documents related to the extracted patents for experimentation. These documents contain field information for all patents related to the data in the sample folder. It includes 18,597 Chinese documents and 29,863 English documents. The format of each document sample is as follows:
