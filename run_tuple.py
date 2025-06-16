@@ -7,7 +7,7 @@ from torch.utils.data import Dataset, DataLoader
 import tqdm
 
 
-# MLP模型
+
 class MLP(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super(MLP, self).__init__()
@@ -26,7 +26,7 @@ class MLP(nn.Module):
         return out
 
 
-# 数据集类
+
 class PatentDataset(Dataset):
     def __init__(self, data_file, pt_folder):
         self.data = self._read_data(data_file)
@@ -40,7 +40,7 @@ class PatentDataset(Dataset):
                 doc = line.strip().split(',')[-2]
                 label=line.strip().split(',')[-1]
 
-                # 每个元素包含专利号列表、文档号和标签
+
                 patent_data.append((parts, doc, int(label)))
                 #print(patent_data)
             return patent_data
@@ -52,22 +52,19 @@ class PatentDataset(Dataset):
         patent_numbers, doc, label = self.data[idx]
         features = []
 
-        ############################################待检测文档list处理#######################################
         for patent_number in patent_numbers:
             #print(patent_numbers)
             pt_file = self.pt_folder + patent_number + '.pt'
 
-
             data = torch.load(pt_file,map_location=torch.device('cpu'))
 
-            # 初始化特征向量的部分
+
             length=4096
             title_embed = torch.zeros(1,length)
             abstract_embed =torch.zeros(1,length)
             description_embed =torch.zeros(1,length)
             claims_embed = torch.zeros(1,length)
 
-            # 在数据处理部分将 numpy 数组转换为 PyTorch 张量
             if len(data['title_embed'])!=0:
                 title_embed = data['title_embed'].reshape(1,length)
 
@@ -85,27 +82,25 @@ class PatentDataset(Dataset):
             # print(abstract_embed.size())
             # print(description_embed.size())
             # print(claims_embed.size())
-            # 连接非空的嵌入向量以构建特征向量
+
             feature = torch.cat((title_embed, abstract_embed, description_embed, claims_embed))
 
             features.append(feature)
-        # 将所有Embedding堆叠为一个张量
+
         features = torch.stack(features)
-        # 累加
         features  = torch.mean(features , dim=0)
 
 
-        ############################################检测位置文档处理#######################################
         pt_file_d = self.pt_folder + doc + '.pt'
         data_d = torch.load(pt_file_d, map_location=torch.device('cpu'))
 
-        # 初始化特征向量的部分
+
         title_embed_d = torch.zeros(1,length)
         abstract_embed_d = torch.zeros(1,length)
         description_embed_d =torch.zeros(1,length)
         claims_embed_d = torch.zeros(1,length)
 
-        # 检查并处理每个嵌入向量
+
         if len(data_d['title_embed'])!=0:
             title_embed_d =data_d['title_embed'].reshape(1,length)
 
@@ -118,31 +113,25 @@ class PatentDataset(Dataset):
         if len(data_d['claims_embed'])!=0:
             claims_embed_d = data_d['claims_embed'].reshape(1,length)
 
-        # 连接非空的嵌入向量以构建特征向量
 
         feature_d = torch.cat((title_embed_d, abstract_embed_d, description_embed_d, claims_embed_d))
 
 
-        ############################################待检测文档和检测位置文档:叠加处理#######################################
         # feature_all=torch.cat((features,feature_d))
         feature_all = torch.cat((features, feature_d))
         f_num, dim = feature_all.size()
         feature_all=feature_all.reshape(f_num * dim)
 
-        # 找出 NaN 值的位置
         mask = torch.isnan(feature_all)
-        # 使用 mask 将 NaN 值替换为0
         feature_all = torch.where(mask, torch.zeros_like(feature_all), feature_all)
-
-        # 找出 inf 值的位置
+        
         mask = torch.isinf(feature_all)
-        # 使用 mask 将 inf 值替换为0
         feature_all = torch.where(mask, torch.zeros_like(feature_all), feature_all)
 
         return feature_all, label
 
 
-# 训练函数
+
 def train(model, train_loader, test_loader, criterion, optimizer, num_epochs, log_file,test_log_file):
     with open(log_file, 'a') as f:
         f.write("Epoch,Train_Loss,Valid_Loss,Accuracy,Precision,Recall,F1,AUC\n")
@@ -159,21 +148,16 @@ def train(model, train_loader, test_loader, criterion, optimizer, num_epochs, lo
             optimizer.step()
             running_train_loss += loss.item()
 
-        # 每一轮epoch结束后进行测试
         valid_loss, accuracy, precision, recall, f1, auc = test(model, valid_loader)
 
-        # 将结果保存到文件中
         with open(log_file, 'a') as f:
             f.write(f"{epoch + 1},{running_train_loss},{valid_loss},{accuracy},{precision},{recall},{f1},{auc}\n")
 
 
-        # 每一轮epoch结束后进行测试
         test_loss, accuracy, precision, recall, f1, auc = test(model, test_loader)
-        # 将结果保存到文件中
         with open(test_log_file, 'a') as f:
             f.write(f"{epoch + 1},{test_loss},{accuracy},{precision},{recall},{f1},{auc}\n")
 
-# 测试函数
 def test(model, test_loader):
     model.eval()
     correct = 0
@@ -212,7 +196,6 @@ if __name__ == '__main__':
     F1_list=[]
     AUC_list=[]
     for cnt in range(1):
-        # 加载数据
         type="all"
 
         foder=f"D:/Draw/GLM/{type}/"
@@ -222,22 +205,21 @@ if __name__ == '__main__':
         print(len(valid_data))
         test_data = PatentDataset(foder+'test_tuple.txt', foder+'fields/')
         print(len(test_data))
-        # 创建数据加载器
+
         train_loader = DataLoader(train_data, batch_size=64, shuffle=True)
         valid_loader = DataLoader(valid_data, batch_size=64)
         test_loader = DataLoader(test_data, batch_size=64)
-        # 模型参数
         input_size =4096 * 8
         hidden_size = 512
         output_size = 1
 
-        # 初始化模型、损失函数和优化器
+
         model = MLP(input_size, hidden_size, output_size)
         criterion = nn.BCELoss()
         optimizer = optim.Adam(model.parameters(), lr=0.0001)
 
         test_log_file = f'test_log_tuple_{type}.txt'
-        # 训练模型
+
         train_log_file = f'train_log_tuple_{type}.txt'
         train(model, train_loader, test_loader, criterion, optimizer, num_epochs=E, log_file=train_log_file,test_log_file=test_log_file)
 
